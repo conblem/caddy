@@ -400,7 +400,7 @@ func (t *TLS) Manage(names []string) error {
 // requires that the automation policy for r.Host has an issuer of type
 // *certmagic.ACMEManager, or one that is ACME-enabled (GetACMEIssuer()).
 func (t *TLS) HandleHTTPChallenge(w http.ResponseWriter, r *http.Request) bool {
-	return hoi
+	return false
 }
 
 // AddAutomationPolicy provisions and adds ap to the list of the app's
