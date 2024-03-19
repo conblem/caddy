@@ -400,6 +400,23 @@ func (t *TLS) Manage(names []string) error {
 // requires that the automation policy for r.Host has an issuer of type
 // *certmagic.ACMEManager, or one that is ACME-enabled (GetACMEIssuer()).
 func (t *TLS) HandleHTTPChallenge(w http.ResponseWriter, r *http.Request) bool {
+	// no-op if it's not an ACME challenge request
+	if !certmagic.LooksLikeHTTPChallenge(r) {
+		return false
+	}
+
+	// try all the issuers until we find the one that initiated the challenge
+	ap := t.getAutomationPolicyForName(r.Host)
+	type acmeCapable interface{ GetACMEIssuer() *ACMEIssuer }
+	for _, iss := range ap.magic.Issuers {
+		if am, ok := iss.(acmeCapable); ok {
+			iss := am.GetACMEIssuer()
+			if iss.issuer.HandleHTTPChallenge(w, r) {
+				return true
+			}
+		}
+	}
+
 	return false
 }
 
